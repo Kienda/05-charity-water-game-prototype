@@ -1,13 +1,248 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Charity Water Game</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffc907">
+  <title>Thirst to Thrive | Every Drop Gives Hope</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Welcome to the Charity Water Game Prototype</h1>
-    <script src="script.js"></script>
+  <a class="skip-link" href="#main-content">Skip to the game</a>
+
+  <main id="main-content">
+    <section class="screen intro-screen is-active" id="intro-screen" aria-labelledby="intro-title">
+      <header class="intro-header">
+        <a class="wordmark" href="#intro-screen" aria-label="Thirst to Thrive home"><span aria-hidden="true">◉</span> Thirst to Thrive</a>
+        <button class="round-button sound-button" type="button" data-sound-toggle aria-pressed="false" aria-label="Mute sound"><span aria-hidden="true">♪</span></button>
+      </header>
+
+      <div class="intro-scene">
+        <div class="intro-shade"></div>
+        <div class="intro-content">
+          <p class="eyebrow">Village Kumbala · Population 186</p>
+          <h1 id="intro-title">Every Drop Gives Hope.<br><span>Every Village Can Thrive.</span></h1>
+          <p class="intro-story">The hand pump is broken. Crops are fading, and children are missing school to search for water. Become Kumbala's young explorer and help hope flow again.</p>
+          <div class="intro-actions">
+            <button class="primary-button" id="begin-button" type="button">Begin the journey <span aria-hidden="true">→</span></button>
+            <button class="ghost-button" id="open-how-button" type="button"><span aria-hidden="true">▶</span> How to play</button>
+          </div>
+        </div>
+
+        <aside class="village-brief" aria-label="Village conditions">
+          <p class="brief-label">Your first mission</p>
+          <h2>Restore clean water before hope disappears.</h2>
+          <dl>
+            <div><dt>Water</dt><dd>No clean source</dd></div>
+            <div><dt>Pump</dt><dd>Broken</dd></div>
+            <div><dt>Village health</dt><dd>Critical</dd></div>
+            <div><dt>Hope</dt><dd>18%</dd></div>
+          </dl>
+        </aside>
+      </div>
+
+      <footer class="intro-footer">
+        <p>An educational experience inspired by <a href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer">charity: water ↗</a></p>
+        <p>Gameplay does not represent a donation.</p>
+      </footer>
+    </section>
+
+    <section class="screen game-screen" id="game-screen" aria-label="Village Kumbala adventure" hidden>
+      <header class="game-hud" aria-label="Player status">
+        <div class="hud-brand"><span aria-hidden="true">◉</span><strong>Thirst to Thrive</strong></div>
+        <div class="hud-vitals">
+          <div class="hud-meter" title="Health">
+            <span aria-hidden="true">♥</span><span class="sr-only">Health</span>
+            <div><i id="health-fill"></i></div><strong id="health-value">100</strong>
+          </div>
+          <div class="hud-meter energy-meter" title="Energy">
+            <span aria-hidden="true">⚡</span><span class="sr-only">Energy</span>
+            <div><i id="energy-fill"></i></div><strong id="energy-value">100</strong>
+          </div>
+        </div>
+        <div class="hud-impact">
+          <div><span>Water</span><strong id="hud-water">0 L</strong></div>
+          <div><span>Impact</span><strong id="hud-score">0</strong></div>
+          <div><span>Helped</span><strong id="hud-helped">0</strong></div>
+        </div>
+        <div class="hud-actions">
+          <button class="round-button" id="mission-log-button" type="button" aria-expanded="false" aria-controls="mission-drawer" aria-label="Open mission log">☷</button>
+          <button class="round-button sound-button" type="button" data-sound-toggle aria-pressed="false" aria-label="Mute sound">♪</button>
+          <button class="round-button" id="pause-button" type="button" aria-label="Pause game">Ⅱ</button>
+        </div>
+      </header>
+
+      <div class="game-layout">
+        <section class="world-viewport" id="world-viewport" aria-label="Explore the savanna. Use WASD or arrow keys to move." tabindex="0">
+          <div class="game-world is-dry" id="game-world">
+            <img class="world-background" src="assets/images/kumbala-savanna.png" alt="Realistic dry African savanna with mountains, acacia trees, rocks, a dry riverbed, a clean spring, and Village Kumbala">
+            <div class="restoration-layer" aria-hidden="true">
+              <div class="flowing-river"></div>
+              <span class="green-patch patch-one"></span><span class="green-patch patch-two"></span><span class="green-patch patch-three"></span>
+              <span class="returning-birds">⌁　⌁　⌁</span>
+            </div>
+
+            <button class="world-object spring-object" data-object="spring" type="button" aria-label="Clean spring. Move close and interact.">
+              <span class="object-visual"><i></i></span><span class="object-name">Clean spring</span>
+            </button>
+            <button class="world-object kit-object" data-object="repair-kit" type="button" aria-label="Repair kit. Move close and interact.">
+              <span class="object-visual">▣</span><span class="object-name">Repair kit</span>
+            </button>
+            <button class="world-object pump-object is-broken" data-object="pump" type="button" aria-label="Broken village hand pump. Move close and interact.">
+              <span class="object-visual"><i class="pump-handle"></i><i class="pump-body"></i></span><span class="object-name">Broken pump</span>
+            </button>
+            <button class="world-object tank-object" data-object="water-tank" type="button" aria-label="Village water tank. Move close and interact.">
+              <span class="object-visual">▤</span><span class="object-name">Water tank</span>
+            </button>
+            <button class="world-object sign-object" data-object="sign" type="button" aria-label="Trail sign. Move close and interact.">
+              <span class="object-visual">↗</span><span class="object-name">Trail sign</span>
+            </button>
+            <button class="world-object volunteer-object" data-object="volunteer" type="button" aria-label="Amina, village water volunteer. Move close and interact.">
+              <span class="person-figure"><i class="person-head"></i><i class="person-body"></i></span><span class="object-name">Amina · Volunteer</span>
+            </button>
+            <button class="world-object villager-object" data-object="villager" type="button" aria-label="Kumbala villager. Move close and interact.">
+              <span class="person-figure small-person"><i class="person-head"></i><i class="person-body"></i></span><span class="object-name">Villager</span>
+            </button>
+            <button class="world-object wildlife-object" data-object="wildlife" type="button" aria-label="Gazelle. Move close and interact.">
+              <span class="object-visual">♞</span><span class="object-name">Gazelle</span>
+            </button>
+
+            <div class="player" id="player" role="img" aria-label="You, Kumbala's young water explorer">
+              <span class="player-shadow"></span>
+              <span class="player-head"></span>
+              <span class="player-body"></span>
+              <span class="player-pack"></span>
+              <span class="player-leg left-leg"></span>
+              <span class="player-leg right-leg"></span>
+            </div>
+          </div>
+
+          <div class="interaction-prompt" id="interaction-prompt" role="status" aria-live="polite" hidden>
+            <kbd>E</kbd><span id="interaction-text">Interact</span>
+          </div>
+
+          <div class="fact-toast" id="fact-toast" role="status" aria-live="polite" hidden>
+            <span aria-hidden="true">◉</span><p><strong>Water fact</strong><span id="fact-text"></span></p>
+          </div>
+
+          <div class="feedback-toast" id="feedback-toast" role="status" aria-live="assertive" hidden>
+            <span id="feedback-icon" aria-hidden="true">✓</span><p><strong id="feedback-title">Mission updated</strong><span id="feedback-text"></span></p>
+          </div>
+
+          <div class="mobile-controls" aria-label="Touch movement controls">
+            <button class="move-button move-up" type="button" data-direction="up" aria-label="Move up">▲</button>
+            <button class="move-button move-left" type="button" data-direction="left" aria-label="Move left">◀</button>
+            <button class="move-button move-down" type="button" data-direction="down" aria-label="Move down">▼</button>
+            <button class="move-button move-right" type="button" data-direction="right" aria-label="Move right">▶</button>
+            <button class="interact-button" id="mobile-interact-button" type="button">Interact</button>
+          </div>
+        </section>
+
+        <aside class="mission-panel" aria-label="Current village impact">
+          <div class="mission-now">
+            <p class="panel-label">Current mission</p>
+            <span class="mission-number" id="mission-number">01</span>
+            <h2 id="mission-title">Find the clean spring</h2>
+            <p id="mission-description">Follow the old riverbed east and look for signs of clean groundwater.</p>
+          </div>
+
+          <div class="hope-section">
+            <div class="hope-heading"><span>Hope meter</span><strong><span id="hope-value">18</span>%</strong></div>
+            <div class="hope-track" id="hope-track" role="progressbar" aria-label="Village hope" aria-valuemin="0" aria-valuemax="100" aria-valuenow="18" aria-valuetext="18 percent, Dry"><i id="hope-fill"></i></div>
+            <div class="hope-labels"><span>Dry</span><span>Recovering</span><span>Thriving</span></div>
+          </div>
+
+          <dl class="impact-list">
+            <div><dt>People helped</dt><dd id="people-helped">0 / 186</dd></div>
+            <div><dt>Water delivered</dt><dd id="water-delivered">0 L</dd></div>
+            <div><dt>Village health</dt><dd id="village-health">Critical</dd></div>
+            <div><dt>Children in school</dt><dd id="children-school">0 / 42</dd></div>
+            <div><dt>Pump status</dt><dd id="pump-status">Broken</dd></div>
+          </dl>
+
+          <div class="inventory">
+            <p class="panel-label">Inventory</p>
+            <div class="inventory-slots">
+              <div id="water-slot"><span aria-hidden="true">◇</span><small>Water</small></div>
+              <div id="kit-slot"><span aria-hidden="true">▣</span><small>Repair kit</small></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <aside class="mission-drawer" id="mission-drawer" aria-label="Mission log" hidden>
+        <div class="drawer-heading"><h2>Mission log</h2><button id="close-log-button" type="button" aria-label="Close mission log">×</button></div>
+        <ol id="mission-list"></ol>
+      </aside>
+    </section>
+
+    <section class="screen result-screen win-screen" id="win-screen" aria-labelledby="win-title" hidden>
+      <div class="result-backdrop is-restored"></div>
+      <article class="result-card">
+        <div class="result-symbol" aria-hidden="true">◉</div>
+        <p class="eyebrow">Village Kumbala · Mission complete</p>
+        <h1 id="win-title">Village Saved</h1>
+        <p class="result-lead">Water is flowing again. Hope has returned.</p>
+        <div class="result-impact">
+          <div><strong>186</strong><span>people now have clean water</span></div>
+          <div><strong>42</strong><span>children returned to school</span></div>
+          <div><strong>100%</strong><span>hope restored</span></div>
+        </div>
+        <blockquote>“Every Drop Gives Hope.”</blockquote>
+        <div class="result-actions">
+          <button class="primary-button" id="continue-button" type="button">Continue</button>
+          <button class="ghost-button" id="play-again-button" type="button">Play again</button>
+          <button class="text-button" id="win-menu-button" type="button">Main menu</button>
+          <a class="text-button" href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer">Learn more ↗</a>
+        </div>
+      </article>
+      <div class="celebration" id="celebration" aria-hidden="true"></div>
+    </section>
+
+    <section class="screen result-screen encouragement-screen" id="encouragement-screen" aria-labelledby="encouragement-title" hidden>
+      <div class="result-backdrop"></div>
+      <article class="result-card split-card">
+        <div class="encouragement-copy">
+          <div class="result-symbol quiet-symbol" aria-hidden="true">◇</div>
+          <p class="eyebrow">Keep heart</p>
+          <h1 id="encouragement-title">The village still needs your help.</h1>
+          <p>Your explorer needs a moment to recover. Every attempt brings Kumbala closer to clean water.</p>
+        </div>
+        <div>
+          <h2>Mission tip</h2>
+          <p id="mission-tip">Follow the mission marker and save your energy by taking the shortest path.</p>
+          <div class="result-actions vertical-actions">
+            <button class="primary-button" id="try-again-button" type="button">Try again</button>
+            <button class="ghost-button" id="tips-button" type="button">More mission tips</button>
+            <button class="text-button" id="restart-button" type="button">Restart from Mission 1</button>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <dialog class="how-dialog" id="how-dialog" aria-labelledby="how-title">
+    <button class="dialog-close" id="close-how-button" type="button" aria-label="Close instructions">×</button>
+    <p class="eyebrow">Explorer guide</p>
+    <h2 id="how-title">Bring hope back to Kumbala</h2>
+    <div class="how-grid">
+      <article><span aria-hidden="true">⌨</span><h3>Move</h3><p>Use WASD or the arrow keys. On a phone, use the direction pad.</p></article>
+      <article><span aria-hidden="true">E</span><h3>Interact</h3><p>Walk near a person or object, then press E, Enter, Space, or Interact.</p></article>
+      <article><span aria-hidden="true">☷</span><h3>Follow the mission</h3><p>Find water, collect a repair kit, fix the pump, and deliver clean water.</p></article>
+    </div>
+    <button class="primary-button" id="how-start-button" type="button">Start Mission 1 →</button>
+  </dialog>
+
+  <dialog class="pause-dialog" id="pause-dialog" aria-labelledby="pause-title">
+    <p class="eyebrow">Journey paused</p>
+    <h2 id="pause-title">Take a breath.</h2>
+    <p>Kumbala will be waiting when you return.</p>
+    <button class="primary-button" id="resume-button" type="button">Resume journey</button>
+    <button class="ghost-button" id="pause-restart-button" type="button">Restart mission</button>
+    <button class="text-button" id="pause-menu-button" type="button">Main menu</button>
+  </dialog>
+
+  <div class="sr-only" id="game-announcements" aria-live="polite" aria-atomic="true"></div>
+  <script src="script.js"></script>
 </body>
 </html>
