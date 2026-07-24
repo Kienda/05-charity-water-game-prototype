@@ -6,6 +6,8 @@ Thirst to Thrive is a story-driven educational browser adventure. You play as a 
 
 The project uses plain HTML, CSS, and beginner-readable JavaScript. It has no dependencies, backend, build step, canvas, or framework.
 
+The typography follows charity: water's published brand guidance: Proxima Nova is preferred when installed, followed by Avenir. Montserrat is loaded as a freely available web fallback with a similar modern geometric character.
+
 ## Run the game
 
 Open `index.html` directly, or serve the folder locally:
@@ -24,6 +26,7 @@ Then visit `http://localhost:8000`.
 - When the game world has focus, Enter and Space also interact.
 - On phones and tablets, use the on-screen direction pad and Interact button.
 - Use the mission-log button to review completed and upcoming missions.
+- Follow the mission compass when you need a nudge, and explore optional landmarks to earn explorer badges.
 - Use Pause to resume, restart the current mission, or return to the menu.
 - Use the sound button to mute the generated ambience and feedback.
 
@@ -37,6 +40,8 @@ Then visit `http://localhost:8000`.
 6. Celebrate the restored village with Amina.
 
 Short educational facts appear between missions without blocking exploration. The dry environment gradually gains water and plant life as hope increases.
+
+Optional conversations and landmarks reward curiosity with small impact bonuses and collectible explorer badges. A live compass and six-step journey bar keep the next goal clear without removing exploration.
 
 ## Project structure
 

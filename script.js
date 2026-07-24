@@ -2,7 +2,40 @@
 
 const WORLD_WIDTH = 1600;
 const WORLD_HEIGHT = 900;
-const INTERACTION_DISTANCE = 125;
+let INTERACTION_DISTANCE = 125;
+
+const DIFFICULTY_SETTINGS = {
+  easy: {
+    label: "Easy",
+    energyDrainRate: 0.28,
+    energyRegenRate: 1.6,
+    interactionDistance: 150,
+    missionTimeLimit: null,
+    missionPoints: [10, 20, 25, 35, 60, 100],
+    discoveryBonus: 5,
+    targetScore: 200
+  },
+  normal: {
+    label: "Normal",
+    energyDrainRate: 0.42,
+    energyRegenRate: 1.2,
+    interactionDistance: 125,
+    missionTimeLimit: null,
+    missionPoints: [10, 20, 25, 35, 60, 100],
+    discoveryBonus: 5,
+    targetScore: 260
+  },
+  hard: {
+    label: "Hard",
+    energyDrainRate: 0.62,
+    energyRegenRate: 0.85,
+    interactionDistance: 95,
+    missionTimeLimit: 40,
+    missionPoints: [15, 25, 30, 45, 75, 120],
+    discoveryBonus: 8,
+    targetScore: 330
+  }
+};
 
 const missionData = [
   {
@@ -110,6 +143,8 @@ class Player {
     this.hasWater = false;
     this.hasRepairKit = false;
     this.isMoving = false;
+    this.energyDrainRate = 0.42;
+    this.energyRegenRate = 1.2;
   }
 
   reset() {
@@ -147,11 +182,11 @@ class Player {
       vertical /= length;
       this.x = clamp(this.x + horizontal * this.speed * deltaSeconds, 45, WORLD_WIDTH - 45);
       this.y = clamp(this.y + vertical * this.speed * deltaSeconds, 115, WORLD_HEIGHT - 35);
-      this.energy = clamp(this.energy - deltaSeconds * 0.42, 0, 100);
+      this.energy = clamp(this.energy - deltaSeconds * this.energyDrainRate, 0, 100);
       if (horizontal < 0) this.element.classList.add("is-facing-left");
       if (horizontal > 0) this.element.classList.remove("is-facing-left");
     } else {
-      this.energy = clamp(this.energy + deltaSeconds * 1.2, 0, 100);
+      this.energy = clamp(this.energy + deltaSeconds * this.energyRegenRate, 0, 100);
     }
 
     this.element.classList.toggle("is-moving", this.isMoving);
@@ -360,6 +395,10 @@ class UIManager {
       document.querySelector("#mission-title").textContent = current.title;
       document.querySelector("#mission-description").textContent = current.description;
     }
+    const completedCount = missions.filter((mission) => mission.status === "complete").length;
+    document.querySelector("#mission-progress-label").textContent = `Mission ${Math.min(currentIndex + 1, missions.length)} of ${missions.length}`;
+    document.querySelector("#journey-fill").style.width = `${(completedCount / missions.length) * 100}%`;
+    document.querySelector(".journey-track").setAttribute("aria-valuenow", String(completedCount));
 
     const list = document.querySelector("#mission-list");
     list.replaceChildren();
@@ -377,6 +416,43 @@ class UIManager {
       item.append(marker, copy);
       list.append(item);
     });
+  }
+
+  updateCompass(player, mission) {
+    if (!mission) return;
+    const target = objectPositions[mission.target];
+    const deltaX = target.x - player.x;
+    const deltaY = target.y - player.y;
+    const distance = Math.hypot(deltaX, deltaY);
+    const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90;
+    document.querySelector("#compass-arrow").style.transform = `rotate(${angle}deg)`;
+    document.querySelector("#compass-distance").textContent = distance < INTERACTION_DISTANCE ? "You’re here — interact!" : distance < 280 ? "Very close" : distance < 560 ? "Getting warmer" : "Follow the arrow";
+  }
+
+  updateTimer(remaining, total) {
+    const meter = document.querySelector("#timer-meter");
+    if (!total) {
+      meter.hidden = true;
+      return;
+    }
+    meter.hidden = false;
+    const percentage = clamp((remaining / total) * 100, 0, 100);
+    document.querySelector("#timer-fill").style.width = `${percentage}%`;
+    document.querySelector("#timer-value").textContent = String(Math.max(0, Math.ceil(remaining)));
+    meter.classList.toggle("is-low", remaining <= 10);
+  }
+
+  setDifficultyLabel(label) {
+    document.querySelector("#hud-difficulty").textContent = label;
+  }
+
+  addBadge(label) {
+    const row = document.querySelector("#badge-row");
+    row.querySelector(".empty-badges")?.remove();
+    const badge = document.createElement("span");
+    badge.className = "explorer-badge";
+    badge.textContent = `★ ${label}`;
+    row.append(badge);
   }
 
   showPrompt(message) {
@@ -404,6 +480,16 @@ class UIManager {
     this.feedbackTimeout = setTimeout(() => { this.feedbackToast.hidden = true; }, 3000);
   }
 
+  spawnPointsPopup(x, y, points) {
+    const popup = document.createElement("span");
+    popup.className = "points-popup";
+    popup.textContent = `+${points} Impact`;
+    popup.style.left = `${x}px`;
+    popup.style.top = `${y}px`;
+    this.world.append(popup);
+    popup.addEventListener("animationend", () => popup.remove());
+  }
+
   updateCamera(player) {
     const viewportWidth = this.viewport.clientWidth;
     const viewportHeight = this.viewport.clientHeight;
@@ -420,13 +506,37 @@ class UIManager {
 class ObjectManager {
   constructor(game) {
     this.game = game;
+    this.world = document.querySelector("#game-world");
+    this.templates = new Map();
     this.elements = new Map();
     document.querySelectorAll("[data-object]").forEach((element) => {
       const id = element.dataset.object;
-      this.elements.set(id, element);
-      element.addEventListener("click", () => this.game.interactWith(id));
+      this.templates.set(id, element.cloneNode(true));
+      this.registerElement(id, element);
     });
     this.nearestObjectId = null;
+  }
+
+  registerElement(id, element) {
+    element.addEventListener("click", () => this.game.interactWith(id));
+    this.elements.set(id, element);
+  }
+
+  removeObject(id) {
+    const element = this.elements.get(id);
+    if (!element) return;
+    element.remove();
+    this.elements.delete(id);
+    if (this.nearestObjectId === id) this.nearestObjectId = null;
+  }
+
+  restoreObject(id) {
+    if (this.elements.has(id)) return;
+    const template = this.templates.get(id);
+    if (!template) return;
+    const clone = template.cloneNode(true);
+    this.world.append(clone);
+    this.registerElement(id, clone);
   }
 
   updateProximity(player) {
@@ -455,6 +565,7 @@ class ObjectManager {
 
   reset() {
     this.nearestObjectId = null;
+    this.templates.forEach((template, id) => this.restoreObject(id));
     this.elements.forEach((element) => element.classList.remove("is-near", "is-complete"));
   }
 }
@@ -477,8 +588,36 @@ class Game {
     this.tipIndex = 0;
     this.rafId = null;
     this.outcomeTimeout = null;
+    this.discoveries = new Set();
+    this.difficultyKey = "normal";
+    this.difficulty = DIFFICULTY_SETTINGS.normal;
+    this.missionTimeRemaining = null;
     this.bindControls();
     this.resetJourney();
+  }
+
+  setDifficulty(key) {
+    if (!DIFFICULTY_SETTINGS[key] || this.isRunning) return;
+    this.difficultyKey = key;
+    this.difficulty = DIFFICULTY_SETTINGS[key];
+    document.querySelectorAll(".difficulty-option").forEach((button) => {
+      const isSelected = button.dataset.difficulty === key;
+      button.classList.toggle("is-selected", isSelected);
+      button.setAttribute("aria-pressed", String(isSelected));
+    });
+  }
+
+  applyDifficulty() {
+    this.player.energyDrainRate = this.difficulty.energyDrainRate;
+    this.player.energyRegenRate = this.difficulty.energyRegenRate;
+    INTERACTION_DISTANCE = this.difficulty.interactionDistance;
+    this.ui.setDifficultyLabel(this.difficulty.label);
+    this.resetMissionTimer();
+  }
+
+  resetMissionTimer() {
+    this.missionTimeRemaining = this.difficulty.missionTimeLimit;
+    this.ui.updateTimer(this.missionTimeRemaining, this.difficulty.missionTimeLimit);
   }
 
   bindControls() {
@@ -542,6 +681,7 @@ class Game {
     document.querySelector("#tips-button").addEventListener("click", () => this.showNextTip());
     document.querySelector("#restart-button").addEventListener("click", () => this.start(true));
     document.querySelectorAll("[data-sound-toggle]").forEach((button) => button.addEventListener("click", () => this.toggleSound()));
+    document.querySelectorAll(".difficulty-option").forEach((button) => button.addEventListener("click", () => this.setDifficulty(button.dataset.difficulty)));
 
     document.querySelector("#pause-dialog").addEventListener("cancel", (event) => {
       event.preventDefault();
@@ -557,16 +697,19 @@ class Game {
     this.isPaused = false;
     this.currentMissionIndex = 0;
     this.impactScore = 0;
+    this.discoveries.clear();
     this.pressedKeys.clear();
     this.player.reset();
     this.village.reset();
     this.objects.reset();
+    this.applyDifficulty();
     this.missions.forEach((mission, index) => { mission.status = index === 0 ? "current" : "locked"; });
     this.ui.updatePlayer(this.player);
     this.ui.updateVillage(this.village, this.impactScore);
     this.ui.updateMission(this.missions, this.currentMissionIndex);
     this.ui.hidePrompt();
     document.querySelector("#celebration").replaceChildren();
+    document.querySelector("#badge-row").innerHTML = '<span class="empty-badges">Explore landmarks to earn badges</span>';
   }
 
   start(shouldReset = false) {
@@ -600,8 +743,15 @@ class Game {
       }
 
       const mission = this.missions[this.currentMissionIndex];
+      this.ui.updateCompass(this.player, mission);
       if (mission && mission.action === "discover" && nearest === mission.target) this.completeMission();
-      if (this.player.energy <= 0) this.showEncouragement();
+      if (this.player.energy <= 0) this.showEncouragement("energy");
+
+      if (this.difficulty.missionTimeLimit && this.missionTimeRemaining !== null) {
+        this.missionTimeRemaining = Math.max(0, this.missionTimeRemaining - deltaSeconds);
+        this.ui.updateTimer(this.missionTimeRemaining, this.difficulty.missionTimeLimit);
+        if (this.missionTimeRemaining <= 0) this.showEncouragement("time");
+      }
     }
 
     this.rafId = requestAnimationFrame((time) => this.loop(time));
@@ -656,6 +806,18 @@ class Game {
       return;
     }
 
+    const discoveryLabels = { sign: "Trail reader", villager: "Good neighbor", wildlife: "Nature watcher" };
+    if (discoveryLabels[objectId] && !this.discoveries.has(objectId)) {
+      this.discoveries.add(objectId);
+      const bonus = this.difficulty.discoveryBonus;
+      this.impactScore += bonus;
+      this.ui.addBadge(discoveryLabels[objectId]);
+      this.ui.updateVillage(this.village, this.impactScore);
+      this.audio.tone(740, 0.12, "triangle", 0.035);
+      const position = objectPositions[objectId];
+      this.ui.spawnPointsPopup(position.x, position.y, bonus);
+    }
+
     const messages = {
       spring: ["Clean spring", "Cool groundwater rises naturally between the rocks."],
       "repair-kit": ["Tool case", "A locally maintained pump can serve a community more reliably."],
@@ -664,9 +826,11 @@ class Game {
       sign: ["Old trail sign", "Spring → southeast · Village → east"],
       volunteer: ["Amina says", "Kumbala has the knowledge to care for its water. We just need your help today."],
       villager: ["A villager says", this.village.isRestored ? "Listen—the water is flowing again!" : "We are holding on. Please keep going."],
-      wildlife: ["Savanna gazelle", "Wildlife also depends on dependable water across the landscape."]
+      wildlife: ["Startled gazelle", "It catches your scent and bounds away into the tall grass."]
     };
     this.ui.showFeedback(...messages[objectId]);
+
+    if (objectId === "wildlife") this.objects.removeObject("wildlife");
   }
 
   performMissionAction(objectId) {
@@ -676,6 +840,7 @@ class Game {
     } else if (objectId === "repair-kit") {
       this.player.hasRepairKit = true;
       this.audio.tone(620, 0.16, "triangle", 0.035);
+      this.objects.removeObject("repair-kit");
     } else if (objectId === "pump") {
       if (!this.player.hasRepairKit) {
         this.ui.showFeedback("Tools needed", "Find the repair kit near the old trail sign first.");
@@ -704,13 +869,19 @@ class Game {
 
     mission.status = "complete";
     this.village.applyMissionImpact(this.currentMissionIndex);
-    this.impactScore += [10, 20, 25, 35, 60, 100][this.currentMissionIndex];
+    const points = this.difficulty.missionPoints[this.currentMissionIndex];
+    this.impactScore += points;
     this.ui.updateVillage(this.village, this.impactScore);
     this.ui.showFeedback(mission.feedback, this.currentMissionIndex === 5 ? "Hope has returned to Kumbala." : "Hope increased. A new mission is ready.");
     this.ui.showFact(mission.fact);
-
-    const completedTarget = this.objects.elements.get(mission.target);
-    if (mission.target === "repair-kit") completedTarget.classList.add("is-complete");
+    const targetPosition = objectPositions[mission.target];
+    if (targetPosition) this.ui.spawnPointsPopup(targetPosition.x, targetPosition.y, points);
+    document.querySelector("#journey-fill").style.width = `${((this.currentMissionIndex + 1) / this.missions.length) * 100}%`;
+    document.querySelector(".journey-track").setAttribute("aria-valuenow", String(this.currentMissionIndex + 1));
+    document.querySelector("#journey-fill").animate(
+      [{ transform: "scaleY(1)" }, { transform: "scaleY(2.2)" }, { transform: "scaleY(1)" }],
+      { duration: 480 }
+    );
 
     if (this.currentMissionIndex === this.missions.length - 1) {
       this.isRunning = false;
@@ -723,6 +894,7 @@ class Game {
     this.currentMissionIndex += 1;
     this.missions[this.currentMissionIndex].status = "current";
     this.ui.updateMission(this.missions, this.currentMissionIndex);
+    this.resetMissionTimer();
   }
 
   restartCurrentMission() {
@@ -743,6 +915,7 @@ class Game {
     document.querySelector("#pause-dialog").close();
     this.isPaused = false;
     this.isRunning = true;
+    this.resetMissionTimer();
     this.ui.showFeedback("Mission restarted", this.missions[this.currentMissionIndex].title);
     this.ui.viewport.focus();
   }
@@ -784,11 +957,12 @@ class Game {
     }
   }
 
-  showEncouragement() {
+  showEncouragement(reason = "energy") {
     if (!this.isRunning) return;
     this.isRunning = false;
     this.pressedKeys.clear();
-    document.querySelector("#mission-tip").textContent = missionTips[this.currentMissionIndex];
+    const baseTip = missionTips[this.currentMissionIndex];
+    document.querySelector("#mission-tip").textContent = reason === "time" ? `The mission clock ran out. ${baseTip}` : baseTip;
     this.ui.showScreen("encouragement");
     document.querySelector("#try-again-button").focus();
   }
@@ -799,6 +973,7 @@ class Game {
     this.ui.showScreen("game");
     this.isRunning = true;
     this.lastFrameTime = performance.now();
+    this.resetMissionTimer();
     this.ui.showFeedback("Ready again", "Kumbala still believes in you.");
     this.ui.viewport.focus();
   }
@@ -812,6 +987,12 @@ class Game {
     this.isRunning = false;
     this.pressedKeys.clear();
     this.ui.showScreen("win");
+    const goalReached = this.impactScore >= this.difficulty.targetScore;
+    const summary = document.querySelector("#win-score-summary");
+    summary.textContent = goalReached
+      ? `Impact score ${this.impactScore} / ${this.difficulty.targetScore} goal — Village Champion on ${this.difficulty.label}!`
+      : `Impact score ${this.impactScore} / ${this.difficulty.targetScore} goal for ${this.difficulty.label}.`;
+    summary.classList.toggle("is-champion", goalReached);
     this.createCelebration();
     document.querySelector("#continue-button").focus();
   }

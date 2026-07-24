@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffc907">
   <title>Thirst to Thrive | Every Drop Gives Hope</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,6 +16,11 @@
   <main id="main-content">
     <section class="screen intro-screen is-active" id="intro-screen" aria-labelledby="intro-title">
       <header class="intro-header">
+        <nav class="intro-nav" aria-label="Clean water resources">
+          <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer">Take action</a>
+          <a href="https://www.charitywater.org/our-work" target="_blank" rel="noopener noreferrer">About the work</a>
+          <a href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer">Why water?</a>
+        </nav>
         <a class="wordmark" href="#intro-screen" aria-label="Thirst to Thrive home"><span aria-hidden="true">◉</span> Thirst to Thrive</a>
         <button class="round-button sound-button" type="button" data-sound-toggle aria-pressed="false" aria-label="Mute sound"><span aria-hidden="true">♪</span></button>
       </header>
@@ -38,18 +46,40 @@
             <div><dt>Village health</dt><dd>Critical</dd></div>
             <div><dt>Hope</dt><dd>18%</dd></div>
           </dl>
+
+          <div class="difficulty-picker">
+            <p class="brief-label">Choose your challenge</p>
+            <div class="difficulty-options" id="difficulty-options">
+              <button class="difficulty-option" type="button" data-difficulty="easy" aria-pressed="false">
+                <strong>Easy</strong><span>Slower drain, no clock, lower goal</span>
+              </button>
+              <button class="difficulty-option is-selected" type="button" data-difficulty="normal" aria-pressed="true">
+                <strong>Normal</strong><span>Balanced pace and goal</span>
+              </button>
+              <button class="difficulty-option" type="button" data-difficulty="hard" aria-pressed="false">
+                <strong>Hard</strong><span>Faster drain, mission clock, high goal</span>
+              </button>
+            </div>
+          </div>
         </aside>
       </div>
 
       <footer class="intro-footer">
-        <p>An educational experience inspired by <a href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer">charity: water ↗</a></p>
-        <p>Gameplay does not represent a donation.</p>
+        <div class="footer-about">
+          <p>An educational experience inspired by charity: water.</p>
+          <p>Gameplay does not represent a donation.</p>
+        </div>
+        <nav class="charity-links" aria-label="Learn more from charity: water">
+          <a href="https://www.charitywater.org/" target="_blank" rel="noopener noreferrer">Visit charity: water <span aria-hidden="true">↗</span></a>
+          <a href="https://www.charitywater.org/our-work" target="_blank" rel="noopener noreferrer">Explore their work <span aria-hidden="true">↗</span></a>
+          <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer">Give clean water <span aria-hidden="true">↗</span></a>
+        </nav>
       </footer>
     </section>
 
     <section class="screen game-screen" id="game-screen" aria-label="Village Kumbala adventure" hidden>
       <header class="game-hud" aria-label="Player status">
-        <div class="hud-brand"><span aria-hidden="true">◉</span><strong>Thirst to Thrive</strong></div>
+        <div class="hud-brand"><span aria-hidden="true">◉</span><strong>Thirst to Thrive</strong><span class="hud-difficulty" id="hud-difficulty">Normal</span></div>
         <div class="hud-vitals">
           <div class="hud-meter" title="Health">
             <span aria-hidden="true">♥</span><span class="sr-only">Health</span>
@@ -58,6 +88,10 @@
           <div class="hud-meter energy-meter" title="Energy">
             <span aria-hidden="true">⚡</span><span class="sr-only">Energy</span>
             <div><i id="energy-fill"></i></div><strong id="energy-value">100</strong>
+          </div>
+          <div class="hud-meter timer-meter" id="timer-meter" title="Mission clock" hidden>
+            <span aria-hidden="true">⏱</span><span class="sr-only">Time remaining</span>
+            <div><i id="timer-fill"></i></div><strong id="timer-value">40</strong>
           </div>
         </div>
         <div class="hud-impact">
@@ -121,6 +155,11 @@
             <kbd>E</kbd><span id="interaction-text">Interact</span>
           </div>
 
+          <div class="mission-compass" id="mission-compass" aria-label="Mission direction">
+            <span class="compass-arrow" id="compass-arrow" aria-hidden="true">↑</span>
+            <span><small>Mission target</small><strong id="compass-distance">Finding route…</strong></span>
+          </div>
+
           <div class="fact-toast" id="fact-toast" role="status" aria-live="polite" hidden>
             <span aria-hidden="true">◉</span><p><strong>Water fact</strong><span id="fact-text"></span></p>
           </div>
@@ -144,6 +183,8 @@
             <span class="mission-number" id="mission-number">01</span>
             <h2 id="mission-title">Find the clean spring</h2>
             <p id="mission-description">Follow the old riverbed east and look for signs of clean groundwater.</p>
+            <p class="mission-progress-label" id="mission-progress-label">Mission 1 of 6</p>
+            <div class="journey-track" role="progressbar" aria-label="Journey progress" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><i id="journey-fill"></i></div>
           </div>
 
           <div class="hope-section">
@@ -167,6 +208,11 @@
               <div id="kit-slot"><span aria-hidden="true">▣</span><small>Repair kit</small></div>
             </div>
           </div>
+
+          <div class="discoveries" aria-live="polite">
+            <p class="panel-label">Explorer badges</p>
+            <div class="badge-row" id="badge-row"><span class="empty-badges">Explore landmarks to earn badges</span></div>
+          </div>
         </aside>
       </div>
 
@@ -183,6 +229,7 @@
         <p class="eyebrow">Village Kumbala · Mission complete</p>
         <h1 id="win-title">Village Saved</h1>
         <p class="result-lead">Water is flowing again. Hope has returned.</p>
+        <p class="result-score" id="win-score-summary"></p>
         <div class="result-impact">
           <div><strong>186</strong><span>people now have clean water</span></div>
           <div><strong>42</strong><span>children returned to school</span></div>
