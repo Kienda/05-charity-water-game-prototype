@@ -110,6 +110,7 @@
         <section class="world-viewport" id="world-viewport" aria-label="Explore the savanna. Use WASD or arrow keys to move." tabindex="0">
           <div class="game-world is-dry" id="game-world">
             <img class="world-background" src="assets/images/kumbala-savanna.png" alt="Realistic dry African savanna with mountains, acacia trees, rocks, a dry riverbed, a clean spring, and Village Kumbala">
+            <div class="nature-layer" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
             <div class="restoration-layer" aria-hidden="true">
               <div class="flowing-river"></div>
               <span class="green-patch patch-one"></span><span class="green-patch patch-two"></span><span class="green-patch patch-three"></span>
@@ -158,6 +159,12 @@
           <div class="mission-compass" id="mission-compass" aria-label="Mission direction">
             <span class="compass-arrow" id="compass-arrow" aria-hidden="true">↑</span>
             <span><small>Mission target</small><strong id="compass-distance">Finding route…</strong></span>
+          </div>
+
+          <div class="trail-guide" id="trail-guide" role="status">
+            <span aria-hidden="true">☀</span>
+            <p><strong>Your journey begins here</strong><small>Move with WASD or the arrow keys. Follow the yellow beacon.</small></p>
+            <button id="dismiss-guide" type="button" aria-label="Dismiss game guide">Got it</button>
           </div>
 
           <div class="fact-toast" id="fact-toast" role="status" aria-live="polite" hidden>

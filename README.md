@@ -8,6 +8,8 @@ The project uses plain HTML, CSS, and beginner-readable JavaScript. It has no de
 
 The typography follows charity: water's published brand guidance: Proxima Nova is preferred when installed, followed by Avenir. Montserrat is loaded as a freely available web fallback with a similar modern geometric character.
 
+The interactive explorer, community members, wildlife, pump, toolkit, tank, and spring use a project-specific realistic sprite sheet generated for this educational prototype. This keeps the photographic environment visually consistent while preserving accessible DOM-based interactions.
+
 ## Run the game
 
 Open `index.html` directly, or serve the folder locally:

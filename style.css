@@ -261,6 +261,10 @@ h1, h2, h3, strong, .wordmark {
 .green-patch { position: absolute; width: 330px; height: 130px; border-radius: 50%; background: radial-gradient(ellipse, rgb(83 124 54 / 78%), rgb(83 124 54 / 0) 68%); }
 .patch-one { left: 800px; top: 390px; }.patch-two { left: 1100px; top: 470px; }.patch-three { left: 180px; top: 470px; }
 .returning-birds { position: absolute; top: 100px; left: 800px; color: #272a24; font-size: 28px; letter-spacing: 30px; animation: birds-fly 9s linear infinite; }
+.nature-layer { position: absolute; inset: 0; z-index: 3; overflow: hidden; pointer-events: none; }
+.nature-layer i { position: absolute; width: 10px; height: 6px; border-radius: 100% 0 100% 0; background: #e6c84d; opacity: .55; animation: leaf-drift 12s linear infinite; }
+.nature-layer i:nth-child(1) { left: 9%; top: 18%; animation-delay: -2s; }.nature-layer i:nth-child(2) { left: 28%; top: 68%; animation-delay: -8s; }.nature-layer i:nth-child(3) { left: 47%; top: 35%; animation-delay: -5s; }.nature-layer i:nth-child(4) { left: 66%; top: 14%; animation-delay: -10s; }.nature-layer i:nth-child(5) { left: 81%; top: 58%; animation-delay: -4s; }.nature-layer i:nth-child(6) { left: 93%; top: 31%; animation-delay: -7s; }
+.game-world.is-recovering .nature-layer i, .game-world.is-restored .nature-layer i { background: #8fc95f; opacity: .85; }
 
 .world-object {
   position: absolute;
@@ -282,8 +286,45 @@ h1, h2, h3, strong, .wordmark {
 .world-object .object-name { padding: 4px 9px; border-radius: 999px; color: white; background: rgb(23 24 17 / 88%); box-shadow: var(--shadow-sm); font-size: .68rem; font-weight: 800; white-space: nowrap; opacity: 0; transform: translateY(4px); transition: .18s ease; }
 .world-object:hover .object-name, .world-object:focus-visible .object-name, .world-object.is-near .object-name { opacity: 1; transform: none; }
 .world-object.is-near .object-visual { outline: 5px solid rgb(255 201 7 / 58%); animation: marker-pulse 1.4s ease-in-out infinite; }
+.world-object.is-target::before { content: ""; position: absolute; top: -24px; width: 20px; height: 20px; border: 5px solid var(--yellow); border-radius: 50%; box-shadow: 0 0 0 8px rgb(255 201 7 / 20%); animation: target-bob 1.2s ease-in-out infinite alternate; }
+.world-object.is-target .object-name { opacity: 1; transform: none; background: #463800; }
 .world-object.is-complete { pointer-events: none; }
 .world-object.is-complete .object-visual { opacity: .6; filter: grayscale(.55); }
+
+/* Realistic generated sprites share one 4 × 2 asset sheet. */
+.spring-object .object-visual,
+.kit-object .object-visual,
+.pump-object .object-visual,
+.tank-object .object-visual,
+.wildlife-object .object-visual,
+.volunteer-object .person-figure,
+.villager-object .person-figure {
+  width: 108px;
+  height: 144px;
+  border: 0 !important;
+  border-radius: 0;
+  color: transparent;
+  background-color: transparent !important;
+  background-image: url("assets/images/realistic-sprites.png") !important;
+  background-repeat: no-repeat;
+  background-size: 400% 200%;
+  box-shadow: none !important;
+  font-size: 0;
+  filter: drop-shadow(0 8px 5px rgb(25 22 16 / 36%));
+}
+.spring-object .object-visual { background: transparent url("assets/images/realistic-sprites.png") 100% 100% / 400% 200% no-repeat !important; }
+.kit-object .object-visual { background: transparent url("assets/images/realistic-sprites.png") 33.333% 100% / 400% 200% no-repeat !important; }
+.pump-object .object-visual { background: transparent url("assets/images/realistic-sprites.png") 0 100% / 400% 200% no-repeat !important; }
+.tank-object .object-visual { background: transparent url("assets/images/realistic-sprites.png") 66.667% 100% / 400% 200% no-repeat !important; }
+.wildlife-object .object-visual { width: 150px; height: 140px; background: transparent url("assets/images/realistic-sprites.png") 100% 0 / 400% 200% no-repeat !important; transform: none; }
+.volunteer-object .person-figure { background: transparent url("assets/images/realistic-sprites.png") 33.333% 0 / 400% 200% no-repeat !important; }
+.villager-object .person-figure { background: transparent url("assets/images/realistic-sprites.png") 66.667% 0 / 400% 200% no-repeat !important; transform: none; }
+.spring-object .object-visual::before,
+.spring-object .object-visual i,
+.pump-object .object-visual i,
+.volunteer-object .person-figure i,
+.villager-object .person-figure i { display: none; }
+.pump-object.is-repaired .object-visual { border: 0; background: transparent url("assets/images/realistic-sprites.png") 0 100% / 400% 200% no-repeat !important; }
 
 .spring-object { left: 1320px; top: 680px; }
 .spring-object .object-visual { overflow: hidden; border-color: #19647c; background: #bde9f2; }
@@ -329,6 +370,8 @@ h1, h2, h3, strong, .wordmark {
   filter: drop-shadow(0 8px 5px rgb(18 17 13 / 34%));
   will-change: left, top;
 }
+.player::before { content: ""; position: absolute; inset: -24px -12px -10px; background: url("assets/images/realistic-sprites.png") 0 0 / 400% 200% no-repeat; filter: drop-shadow(0 8px 5px rgb(18 17 13 / 38%)); }
+.player > span { opacity: 0; }
 .player-shadow { position: absolute; left: 8px; bottom: -4px; width: 50px; height: 14px; border-radius: 50%; background: rgb(26 20 13 / 28%); }
 .player-head { position: absolute; z-index: 4; top: 0; left: 18px; width: 27px; height: 29px; border-radius: 50%; background: #754b31; box-shadow: inset 0 7px #25201b; }
 .player-body { position: absolute; z-index: 3; top: 25px; left: 13px; width: 38px; height: 41px; border-radius: 11px 11px 5px 5px; background: #dfb426; box-shadow: inset 0 -8px #b07e16; }
@@ -346,6 +389,12 @@ h1, h2, h3, strong, .wordmark {
 .mission-compass small, .mission-compass strong { display: block; line-height: 1.15; }
 .mission-compass small { margin-bottom: 3px; color: #ddd7c9; font-size: .61rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
 .mission-compass strong { font-size: .78rem; }
+.trail-guide { position: absolute; z-index: 44; left: 24px; bottom: 24px; max-width: 370px; padding: 14px; display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 12px; border: 1px solid rgb(255 255 255 / 55%); border-radius: 10px; color: white; background: rgb(13 66 75 / 92%); box-shadow: var(--shadow-lg); backdrop-filter: blur(8px); transition: opacity .25s, transform .25s; }
+.trail-guide.is-hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
+.trail-guide > span { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #302700; background: var(--yellow); }
+.trail-guide p, .trail-guide strong, .trail-guide small { margin: 0; display: block; }
+.trail-guide small { margin-top: 2px; color: rgb(255 255 255 / 78%); font-size: .7rem; }
+.trail-guide button { padding: 7px 9px; border: 0; border-radius: 4px; color: #302700; background: var(--yellow); font-size: .68rem; font-weight: 800; }
 
 .fact-toast, .feedback-toast { position: absolute; z-index: 42; top: 24px; left: 24px; width: min(420px, calc(100% - 48px)); padding: 15px 18px; display: flex; align-items: center; gap: 14px; border-left: 6px solid var(--yellow); border-radius: 6px; background: rgb(255 254 250 / 96%); box-shadow: var(--shadow-lg); animation: toast-in .25s ease-out; }
 .fact-toast > span, .feedback-toast > span { flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: #453500; background: var(--yellow); font-weight: 900; }
@@ -461,6 +510,8 @@ h1, h2, h3, strong, .wordmark {
 @keyframes toast-in { from { opacity: 0; transform: translateY(-10px); } }
 @keyframes water-shimmer { to { filter: brightness(1.18); transform: translateY(4px); } }
 @keyframes birds-fly { from { transform: translateX(-250px); } to { transform: translateX(700px); } }
+@keyframes leaf-drift { 0% { transform: translate(-30px, -20px) rotate(0); } 50% { transform: translate(55px, 45px) rotate(190deg); } 100% { transform: translate(120px, 110px) rotate(380deg); } }
+@keyframes target-bob { from { transform: translateY(0) scale(.9); } to { transform: translateY(-8px) scale(1.06); } }
 @keyframes gazelle-return { to { transform: translate(-50%, -50%) translateX(40px); } }
 @keyframes celebrate-fall { to { transform: translateY(110vh) rotate(720deg); } }
 @keyframes points-float { from { opacity: 0; transform: translate(-50%, -100%) translateY(0); } 18% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -100%) translateY(-64px); } }
@@ -516,6 +567,7 @@ h1, h2, h3, strong, .wordmark {
   .interaction-prompt { bottom: 196px; }
   .mission-compass { top: 322px; bottom: auto; min-width: 170px; }
   .mission-compass small { display: none; }
+  .trail-guide { right: 14px; bottom: 200px; left: 14px; max-width: none; grid-template-columns: 32px 1fr auto; }
   .fact-toast, .feedback-toast { top: auto; bottom: 200px; left: 14px; width: calc(100% - 28px); }
   .feedback-toast { transform: none; }
   .how-grid { grid-template-columns: 1fr; }

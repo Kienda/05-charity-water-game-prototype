@@ -399,6 +399,9 @@ class UIManager {
     document.querySelector("#mission-progress-label").textContent = `Mission ${Math.min(currentIndex + 1, missions.length)} of ${missions.length}`;
     document.querySelector("#journey-fill").style.width = `${(completedCount / missions.length) * 100}%`;
     document.querySelector(".journey-track").setAttribute("aria-valuenow", String(completedCount));
+    document.querySelectorAll("[data-object]").forEach((element) => {
+      element.classList.toggle("is-target", Boolean(current && element.dataset.object === current.target));
+    });
 
     const list = document.querySelector("#mission-list");
     list.replaceChildren();
@@ -682,6 +685,7 @@ class Game {
     document.querySelector("#restart-button").addEventListener("click", () => this.start(true));
     document.querySelectorAll("[data-sound-toggle]").forEach((button) => button.addEventListener("click", () => this.toggleSound()));
     document.querySelectorAll(".difficulty-option").forEach((button) => button.addEventListener("click", () => this.setDifficulty(button.dataset.difficulty)));
+    document.querySelector("#dismiss-guide").addEventListener("click", () => this.hideTrailGuide());
 
     document.querySelector("#pause-dialog").addEventListener("cancel", (event) => {
       event.preventDefault();
@@ -710,6 +714,7 @@ class Game {
     this.ui.hidePrompt();
     document.querySelector("#celebration").replaceChildren();
     document.querySelector("#badge-row").innerHTML = '<span class="empty-badges">Explore landmarks to earn badges</span>';
+    document.querySelector("#trail-guide").classList.remove("is-hidden");
   }
 
   start(shouldReset = false) {
@@ -726,12 +731,17 @@ class Game {
     if (!this.rafId) this.rafId = requestAnimationFrame((time) => this.loop(time));
   }
 
+  hideTrailGuide() {
+    document.querySelector("#trail-guide").classList.add("is-hidden");
+  }
+
   loop(currentTime) {
     const deltaSeconds = Math.min((currentTime - this.lastFrameTime) / 1000, 0.05);
     this.lastFrameTime = currentTime;
 
     if (this.isRunning && !this.isPaused) {
       this.player.update(deltaSeconds, this.pressedKeys);
+      if (this.player.isMoving) this.hideTrailGuide();
       this.ui.updateCamera(this.player);
       const nearest = this.objects.updateProximity(this.player);
 
